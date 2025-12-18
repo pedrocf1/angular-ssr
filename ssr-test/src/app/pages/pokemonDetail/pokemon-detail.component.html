@@ -1,0 +1,9 @@
+<p>about.component works!</p>
+
+@if (loading()) {
+  <p>Loading pokemon...</p>
+} @else if (error()) {
+  <p>{{ error() }}</p>
+} @else if (pokemon()?.name) {
+  <p>Pokemon: {{ pokemon()?.name }}</p>
+}

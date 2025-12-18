@@ -1,12 +1,16 @@
-import { RenderMode, ServerRoute } from '@angular/ssr';
+import { PrerenderFallback, RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
   {
-    path: '**',
-    renderMode: RenderMode.Prerender
+    path: 'about2',
+    renderMode: RenderMode.Client,
   },
   {
-    path: 'about', // This page is static, so we prerender it (SSG)
+    path: 'about/:name',
     renderMode: RenderMode.Prerender,
-  }
+    fallback: PrerenderFallback.Client,
+    async getPrerenderParams() {
+      return [{ name: 'bulbasaur' }];
+    },
+  },
 ];
