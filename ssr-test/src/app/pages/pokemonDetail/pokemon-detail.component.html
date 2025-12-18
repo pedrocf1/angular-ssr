@@ -1,9 +1,140 @@
-<p>about.component works!</p>
+<div class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-8 px-4">
+  <div class="max-w-4xl mx-auto">
+    @if (loading()) {
+      <div class="flex items-center justify-center h-96">
+        <div class="text-white text-2xl">Loading pokemon...</div>
+      </div>
+    } @else if (error()) {
+      <div class="bg-red-500/20 border border-red-500 rounded-lg p-4 text-red-300">
+        {{ error() }}
+      </div>
+    } @else if (pokemon()) {
+      <div class="bg-slate-800 rounded-lg shadow-2xl overflow-hidden border border-slate-700">
+        <!-- Header Section -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-5xl font-bold text-white capitalize">{{ pokemon()!.name }}</h1>
+              <p class="text-blue-100 mt-2">ID: #{{ pokemon()!.id }}</p>
+            </div>
+            <div class="text-6xl">
+              @switch (pokemon()!.types[0].type.name) {
+                @case ("fire") { 🔥 }
+                @case ("water") { 💧 }
+                @case ("grass") { 🌿 }
+                @case ("eletric") { ⚡ }
+                @default { ⭐ }
+              }
+            </div>
+          </div>
+        </div>
 
-@if (loading()) {
-  <p>Loading pokemon...</p>
-} @else if (error()) {
-  <p>{{ error() }}</p>
-} @else if (pokemon()?.name) {
-  <p>Pokemon: {{ pokemon()?.name }}</p>
-}
+        <!-- Main Content -->
+        <div class="p-8">
+          <!-- Image and Basic Stats -->
+          <div class="grid md:grid-cols-3 gap-8 mb-8">
+            <!-- Image -->
+            <div class="flex items-center justify-center bg-slate-700/50 rounded-lg p-4">
+              @if (pokemon()!.sprites.other?.['official-artwork']?.front_default) {
+                <img 
+                  [src]="pokemon()!.sprites.other?.['official-artwork']?.front_default!" 
+                  [alt]="pokemon()!.name"
+                  class="h-64 w-64 object-contain drop-shadow-lg"
+                />
+              } @else if (pokemon()!.sprites.front_default) {
+                <img 
+                  [src]="pokemon()!.sprites.front_default" 
+                  [alt]="pokemon()!.name"
+                  class="h-64 w-64 object-contain drop-shadow-lg"
+                />
+              } @else {
+                <div class="text-slate-400 text-center">No image available</div>
+              }
+            </div>
+
+            <!-- Physical Stats -->
+            <div class="space-y-4">
+              <h3 class="text-xl font-bold text-white mb-4">Physical Stats</h3>
+              @if (pokemon()!.height != null) {
+                <div class="bg-slate-700/50 rounded p-4">
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="text-slate-300">Height:</span>
+                    <span class="text-white font-semibold">{{ (pokemon()!.height / 10).toFixed(1) }}m</span>
+                  </div>
+                </div>
+              }
+              @if (pokemon()!.weight != null) {
+                <div class="bg-slate-700/50 rounded p-4">
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="text-slate-300">Weight:</span>
+                    <span class="text-white font-semibold">{{ (pokemon()!.weight / 10).toFixed(1) }}kg</span>
+                  </div>
+                </div>
+              }
+              @if (pokemon()?.base_experience != null) {
+                <div class="bg-slate-700/50 rounded p-4">
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="text-slate-300">Base Exp:</span>
+                    <span class="text-white font-semibold">{{ pokemon()?.base_experience }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Types -->
+            <div class="space-y-4">
+              <h3 class="text-xl font-bold text-white mb-4">Type</h3>
+              <div class="space-y-2">
+                @if (pokemon()!.types && pokemon()!.types.length > 0) {
+                  @for (type of pokemon()!.types; track type.type.name) {
+                    <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-full px-4 py-2">
+                      <span class="text-white font-semibold capitalize">{{ type.type.name }}</span>
+                    </div>
+                  }
+                } @else {
+                  <span class="text-slate-400 text-sm">No types available</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Bar -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-white mb-4">Base Stats</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              @for (stat of pokemon()!.stats; track stat.stat.name) {
+                <div>
+                  <div class="flex justify-between text-sm mb-2">
+                    <span class="text-slate-300 capitalize">{{ stat.stat.name }}</span>
+                    <span class="text-white font-semibold">{{ stat.base_stat }}</span>
+                  </div>
+                  <div class="w-full bg-slate-700 rounded-full h-2">
+                    <div 
+                      class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
+                      [style.width.%]="(stat.base_stat / 150) * 100"
+                    ></div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Abilities -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-white mb-4">Abilities</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              @for (ability of pokemon()!.abilities; track ability.ability.name) {
+                <div class="bg-slate-700/50 rounded p-4 border-l-4 border-blue-500">
+                  <div class="capitalize text-white font-semibold">{{ ability.ability.name }}</div>
+                  @if (ability.is_hidden) {
+                    <span class="text-xs bg-yellow-500/30 text-yellow-300 px-2 py-1 rounded mt-2 inline-block">Hidden Ability</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

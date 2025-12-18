@@ -17,19 +17,21 @@ export class PokemonDetailComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
 
-  async ngOnInit() {
+  ngOnInit() {
     const name = this.activatedRoute.snapshot.paramMap.get('name');
     if (name) {
       this.loading.set(true);
-      try {
-        const data = await this.pokeApiService.getPokemonByName(name);
-        this.pokemon.set(data);
-        console.log('Pokemon fetched:', data);
-        this.loading.set(false);
-      } catch (err: any) {
-        this.error.set(`Failed to load pokemon: ${err?.message}`);
-        this.loading.set(false);
-      }
+      this.pokeApiService
+        .getPokemonByName(name)
+        .then((data) => {
+          this.pokemon.set(data);
+          console.log('Pokemon fetched:', data);
+          this.loading.set(false);
+        })
+        .catch((err: any) => {
+          this.error.set(`Failed to load pokemon: ${err?.message || 'Unknown error'}`);
+          this.loading.set(false);
+        });
     }
   }
 }

@@ -2,15 +2,15 @@ import { PrerenderFallback, RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
   {
-    path: 'about2',
+    path: 'about',
     renderMode: RenderMode.Client,
   },
   {
-    path: 'about/:name',
+    path: 'pokemondetail/:name',
     renderMode: RenderMode.Prerender,
-    fallback: PrerenderFallback.Client,
+    fallback: PrerenderFallback.Server,
     async getPrerenderParams() {
-      return [{ name: 'bulbasaur' }];
+      return [{ name: 'bulbasaur' }, { name: 'charmander' }, { name: 'pikachu' }, { name: 'squirtle' }];
     },
   },
 ];
