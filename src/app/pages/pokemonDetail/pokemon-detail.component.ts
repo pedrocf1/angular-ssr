@@ -1,16 +1,19 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { JsonPipe } from '@angular/common';
+import { Component, OnInit, Input, OnChanges, SimpleChanges, effect, inject, signal } from '@angular/core';
+import { CommonModule, JsonPipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { PokeApiService } from '../../services/pokeapi.service';
 import { Pokemon } from 'pokenode-ts';
 
 @Component({
-  selector: 'pokemon-detail.component',
-  imports: [JsonPipe],
+  selector: 'app-pokemon-detail',
+  standalone: true,
+  imports: [JsonPipe, CommonModule],
   templateUrl: './pokemon-detail.component.html',
   styleUrl: './pokemon-detail.component.scss',
 })
-export class PokemonDetailComponent implements OnInit {
+export class PokemonDetailComponent implements OnInit, OnChanges {
+  @Input() pokemonData: Pokemon | null = null;
+
   private activatedRoute = inject(ActivatedRoute);
   private pokeApiService = inject(PokeApiService);
   
@@ -21,7 +24,29 @@ export class PokemonDetailComponent implements OnInit {
   evolutionLoading = signal(false);
   evolutionError = signal<string | null>(null);
 
+  constructor() {
+    // Watch for input changes
+    effect(() => {
+      if (this.pokemonData) {
+        this.pokemon.set(this.pokemonData);
+      }
+    });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pokemonData'] && this.pokemonData) {
+      this.pokemon.set(this.pokemonData);
+    }
+  }
+
   ngOnInit() {
+    // If pokemonData is provided as input (from modal), use it directly
+    if (this.pokemonData) {
+      this.pokemon.set(this.pokemonData);
+      return;
+    }
+
+    // Otherwise, fetch from route params (original behavior for direct navigation)
     const name = this.activatedRoute.snapshot.paramMap.get('name');
     if (name) {
       this.loading.set(true);

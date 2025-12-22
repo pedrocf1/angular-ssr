@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-8 px-4">
+<div [class]="pokemonData ? '' : 'min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-8 px-4'">
   <div class="max-w-4xl mx-auto">
     @if (loading()) {
       <div class="flex items-center justify-center h-96">
@@ -22,7 +22,21 @@
                 @case ("fire") { 🔥 }
                 @case ("water") { 💧 }
                 @case ("grass") { 🌿 }
-                @case ("eletric") { ⚡ }
+                @case ("electric") { ⚡ }
+                @case ("psychic") { 🧠 }
+                @case ("flying") { 🦅 }
+                @case ("fighting") { 👊 }
+                @case ("poison") { ☠️ }
+                @case ("ground") { ⛏️ }
+                @case ("rock") { 🪨 }
+                @case ("bug") { 🐛 }
+                @case ("ghost") { 👻 }
+                @case ("steel") { ⚙️ }
+                @case ("ice") { ❄️ }
+                @case ("dragon") { 🐉 }
+                @case ("dark") { 🌑 }
+                @case ("fairy") { ✨ }
+                @case ("normal") { 🔘 }
                 @default { ⭐ }
               }
             </div>

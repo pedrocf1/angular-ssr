@@ -1,0 +1,127 @@
+<div class="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-8 px-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 mb-8">
+      <h1 class="text-5xl font-bold text-white">Pokémon List</h1>
+      <p class="text-blue-100 mt-2">Discover and explore all Pokémon</p>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex items-center justify-center h-96">
+        <div class="text-white text-2xl">Loading pokémons...</div>
+      </div>
+    } @else if (pokemonList().length > 0) {
+      <div class="space-y-8">
+        <!-- Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          @for (pokemon of pokemonList(); track pokemon.name) {
+            <button (click)="openPokemonModal(pokemon.name)" class="group text-left">
+              <div class="bg-slate-800 rounded-lg shadow-lg overflow-hidden border border-slate-700 transition-all duration-300 hover:shadow-2xl hover:border-blue-500 cursor-pointer">
+                <!-- Image Container -->
+                <div class="flex items-center justify-center bg-slate-700/50 h-48 p-4">
+                  <img 
+                    [src]="getPokemonImageUrl(pokemon.url)" 
+                    [alt]="pokemon.name"
+                    class="h-40 w-40 object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
+                
+                <!-- Content -->
+                <div class="p-6">
+                  <div class="flex items-baseline justify-between mb-3">
+                    <h3 class="text-xl font-bold text-white capitalize group-hover:text-blue-400 transition-colors">
+                      {{ pokemon.name }}
+                    </h3>
+                    <span class="text-2xl cursor-help relative group/icon" [title]="getFirstType(pokemon)">
+                      @switch (getFirstType(pokemon)) {
+                        @case ("fire") { 🔥 }
+                        @case ("water") { 💧 }
+                        @case ("grass") { 🌿 }
+                        @case ("electric") { ⚡ }
+                        @case ("psychic") { 🧠 }
+                        @case ("flying") { 🦅 }
+                        @case ("fighting") { 👊 }
+                        @case ("poison") { ☠️ }
+                        @case ("ground") { ⛏️ }
+                        @case ("rock") { 🪨 }
+                        @case ("bug") { 🐛 }
+                        @case ("ghost") { 👻 }
+                        @case ("steel") { ⚙️ }
+                        @case ("ice") { ❄️ }
+                        @case ("dragon") { 🐉 }
+                        @case ("dark") { 🌑 }
+                        @case ("fairy") { ✨ }
+                        @case ("normal") { 🔘 }
+                        @default { 🔘 }
+                      }
+                      <span class="absolute bottom-full left-1/2 -translate-x-1/2 bg-slate-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/icon:opacity-100 pointer-events-none transition-opacity capitalize">
+                        {{ getFirstType(pokemon) }}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          }
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-slate-800 rounded-lg border border-slate-700 p-6">
+          <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+            <button
+              (click)="previousPage()"
+              [disabled]="!hasPreviousPage()"
+              class="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              ← Previous
+            </button>
+
+            <div class="text-center">
+              <div class="text-white font-semibold">
+                Page {{ currentPage() }} of {{ getTotalPages() }}
+              </div>
+              <div class="text-slate-400 text-sm">
+                ({{ totalCount() }} total pokémons)
+              </div>
+            </div>
+
+            <button
+              (click)="nextPage()"
+              [disabled]="!hasNextPage()"
+              class="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="bg-slate-800 rounded-lg border border-slate-700 p-12 text-center">
+        <p class="text-slate-400 text-xl">No pokémons found</p>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Pokemon Detail Modal -->
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" (click)="closeModalOnBackdropClick($event)">
+    <div class="bg-slate-900 rounded-lg shadow-2xl max-w-4xl w-full my-8 relative">
+      <button
+        (click)="closeModal()"
+        class="modal-close-btn"
+        aria-label="Close modal"
+      >
+        ✕
+      </button>
+
+      @if (modalLoading()) {
+        <div class="flex items-center justify-center h-96">
+          <div class="text-white text-2xl">Loading pokemon details...</div>
+        </div>
+      } @else if (selectedPokemon()) {
+        <app-pokemon-detail [pokemonData]="selectedPokemon()"></app-pokemon-detail>
+      }
+    </div>
+  </div>
+}
