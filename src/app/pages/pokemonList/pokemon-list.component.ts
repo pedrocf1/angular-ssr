@@ -30,12 +30,14 @@ export class PokemonListComponent implements OnInit {
 
   pokemonList = signal<PokemonItem[]>([]);
   totalCount = signal<number>(0);
-  currentPage = signal<number>(1);
   itemsPerPage = signal<number>(20);
   isLoading = signal<boolean>(false);
+  isLoadingMore = signal<boolean>(false);
   selectedPokemon = signal<Pokemon | null>(null);
   showModal = signal<boolean>(false);
   modalLoading = signal<boolean>(false);
+  offset = signal<number>(0);
+  hasMoreResults = signal<boolean>(true);
 
   constructor() {
     // Watch for modal state changes and update body overflow
@@ -54,32 +56,13 @@ export class PokemonListComponent implements OnInit {
 
   private loadPokemonList(): void {
     this.isLoading.set(true);
-    const offset = (this.currentPage() - 1) * this.itemsPerPage();
+    this.offset.set(0);
 
     this.pokeApiService
-      .getPokemonsList(this.itemsPerPage(), offset)
+      .getPokemonsList(this.itemsPerPage(), 0)
       .then((response: PokemonListResponse) => {
-        // Fetch types for each pokemon
-        const pokemonWithTypes = response.results.map(pokemon => 
-          this.pokeApiService.getPokemonByName(pokemon.name)
-            .then(details => ({
-              ...pokemon,
-              types: details.types
-            }))
-        );
-
-        Promise.all(pokemonWithTypes)
-          .then(results => {
-            this.pokemonList.set(results);
-            this.totalCount.set(response.count);
-            this.isLoading.set(false);
-          })
-          .catch(error => {
-            console.error('Error loading pokemon types:', error);
-            this.pokemonList.set(response.results);
-            this.totalCount.set(response.count);
-            this.isLoading.set(false);
-          });
+        this.totalCount.set(response.count);
+        this.fetchPokemonDetails(response.results, true);
       })
       .catch((error) => {
         console.error('Error loading pokemon list:', error);
@@ -87,32 +70,56 @@ export class PokemonListComponent implements OnInit {
       });
   }
 
-  nextPage(): void {
-    if (this.hasNextPage()) {
-      this.currentPage.update((page) => page + 1);
-      this.loadPokemonList();
-    }
+  loadMorePokemon(): void {
+    if (this.isLoadingMore() || !this.hasMoreResults()) return;
+
+    this.isLoadingMore.set(true);
+    const newOffset = this.offset() + this.itemsPerPage();
+    this.offset.set(newOffset);
+
+    this.pokeApiService
+      .getPokemonsList(this.itemsPerPage(), newOffset)
+      .then((response: PokemonListResponse) => {
+        if (response.results.length === 0) {
+          this.hasMoreResults.set(false);
+        }
+        this.fetchPokemonDetails(response.results, false);
+      })
+      .catch((error) => {
+        console.error('Error loading more pokemon:', error);
+        this.isLoadingMore.set(false);
+      });
   }
 
-  previousPage(): void {
-    if (this.hasPreviousPage()) {
-      this.currentPage.update((page) => page - 1);
-      this.loadPokemonList();
-    }
-  }
-
-  hasNextPage(): boolean {
-    return (
-      this.currentPage() * this.itemsPerPage() < this.totalCount()
+  private fetchPokemonDetails(pokemonResults: PokemonItem[], isInitial: boolean): void {
+    const pokemonWithTypes = pokemonResults.map(pokemon => 
+      this.pokeApiService.getPokemonByName(pokemon.name)
+        .then(details => ({
+          ...pokemon,
+          types: details.types
+        }))
     );
-  }
 
-  hasPreviousPage(): boolean {
-    return this.currentPage() > 1;
-  }
-
-  getTotalPages(): number {
-    return Math.ceil(this.totalCount() / this.itemsPerPage());
+    Promise.all(pokemonWithTypes)
+      .then(results => {
+        if (isInitial) {
+          this.pokemonList.set(results);
+          this.isLoading.set(false);
+        } else {
+          this.pokemonList.update(current => [...current, ...results]);
+          this.isLoadingMore.set(false);
+        }
+      })
+      .catch(error => {
+        console.error('Error loading pokemon types:', error);
+        if (isInitial) {
+          this.pokemonList.set(pokemonResults);
+          this.isLoading.set(false);
+        } else {
+          this.pokemonList.update(current => [...current, ...pokemonResults]);
+          this.isLoadingMore.set(false);
+        }
+      });
   }
 
   getPokemonImageUrl(url: string): string {
@@ -150,6 +157,16 @@ export class PokemonListComponent implements OnInit {
   closeModal(): void {
     this.showModal.set(false);
     this.selectedPokemon.set(null);
+  }
+
+  @HostListener('window:scroll', [])
+  onScroll(): void {
+    const scrollPosition = window.innerHeight + window.scrollY;
+    const threshold = document.documentElement.scrollHeight - 500; // Load more when 500px from bottom
+
+    if (scrollPosition >= threshold && !this.isLoadingMore() && this.hasMoreResults()) {
+      this.loadMorePokemon();
+    }
   }
 
   onModalClose(): void {
