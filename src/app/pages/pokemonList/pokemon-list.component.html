@@ -103,25 +103,10 @@
   </div>
 </div>
 
-<!-- Pokemon Detail Modal -->
-@if (showModal()) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" (click)="closeModalOnBackdropClick($event)">
-    <div class="bg-slate-900 rounded-lg shadow-2xl max-w-4xl w-full my-8 relative">
-      <button
-        (click)="closeModal()"
-        class="modal-close-btn"
-        aria-label="Close modal"
-      >
-        ✕
-      </button>
-
-      @if (modalLoading()) {
-        <div class="flex items-center justify-center h-96">
-          <div class="text-white text-2xl">Loading pokemon details...</div>
-        </div>
-      } @else if (selectedPokemon()) {
-        <app-pokemon-detail [pokemonData]="selectedPokemon()"></app-pokemon-detail>
-      }
-    </div>
-  </div>
-}
+<!-- Pokemon Modal Component -->
+<app-pokemon-modal 
+  [showModal]="showModal()"
+  [selectedPokemon]="selectedPokemon()"
+  [modalLoading]="modalLoading()"
+  (closeModalEvent)="onModalClose()">
+</app-pokemon-modal>

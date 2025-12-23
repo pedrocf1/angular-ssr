@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { PokemonDetailComponent } from './pages/pokemonDetail/pokemon-detail.component';
+import { PokemonDetailComponent } from './components/pokemonDetail/pokemon-detail.component';
 import { AboutComponent } from './pages/about/about.component';
 import { PokemonListComponent } from './pages/pokemonList/pokemon-list.component';
 

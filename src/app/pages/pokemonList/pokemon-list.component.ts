@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PokeApiService } from '../../services/pokeapi.service';
-import { PokemonDetailComponent } from '../pokemonDetail/pokemon-detail.component';
+import { PokemonModalComponent } from '../../components/pokemon-modal/pokemon-modal.component';
 import { Pokemon } from 'pokenode-ts';
 
 interface PokemonItem {
@@ -21,7 +21,7 @@ interface PokemonListResponse {
 @Component({
   selector: 'app-pokemon-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, PokemonDetailComponent],
+  imports: [CommonModule, RouterModule, PokemonModalComponent],
   templateUrl: './pokemon-list.component.html',
   styleUrl: './pokemon-list.component.scss',
 })
@@ -36,6 +36,17 @@ export class PokemonListComponent implements OnInit {
   selectedPokemon = signal<Pokemon | null>(null);
   showModal = signal<boolean>(false);
   modalLoading = signal<boolean>(false);
+
+  constructor() {
+    // Watch for modal state changes and update body overflow
+    effect(() => {
+      if (this.showModal()) {
+        document.body.classList.add('overflow-hidden');
+      } else {
+        document.body.classList.remove('overflow-hidden');
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadPokemonList();
@@ -141,18 +152,7 @@ export class PokemonListComponent implements OnInit {
     this.selectedPokemon.set(null);
   }
 
-  closeModalOnBackdropClick(event: MouseEvent): void {
-    // Close only if clicking on the backdrop itself (the outer div), not the modal content
-    const backdrop = event.currentTarget as HTMLElement;
-    if (event.target === backdrop) {
-      this.closeModal();
-    }
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    if (this.showModal()) {
-      this.closeModal();
-    }
+  onModalClose(): void {
+    this.closeModal();
   }
 }

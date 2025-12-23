@@ -33,4 +33,13 @@ export class PokeApiService {
       throw err;
     });
   }
+
+  getTypeById(id: number): Promise<any> {
+    return firstValueFrom(
+      this.http.get(`${this.baseUrl}/type/${id}`)
+    ).catch((err: any) => {
+      console.error('HTTP error fetching type:', id, err);
+      throw err;
+    });
+  }
 }
