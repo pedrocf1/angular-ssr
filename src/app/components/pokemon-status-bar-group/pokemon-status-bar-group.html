@@ -1,0 +1,18 @@
+
+<h3 class="text-xl font-bold text-white mb-4">Base Stats</h3>
+<div class="grid md:grid-cols-2 gap-4">
+    @for (stat of pokemon()!.stats; track stat.stat.name) {
+    <div>
+        <div class="flex justify-between text-sm mb-2">
+        <span class="text-slate-300 capitalize">{{ stat.stat.name }}</span>
+        <span class="text-white font-semibold">{{ stat.base_stat }}</span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-2">
+        <div 
+            class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
+            [style.width.%]="(stat.base_stat / 150) * 100"
+        ></div>
+        </div>
+    </div>
+    }
+</div>

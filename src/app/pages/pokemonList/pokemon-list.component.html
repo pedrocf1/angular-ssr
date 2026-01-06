@@ -14,8 +14,8 @@
       <div class="space-y-8">
         <!-- Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          @for (pokemon of pokemonList(); track pokemon.name) {
-            <button (click)="openPokemonModal(pokemon.name)" class="group text-left">
+          @for (pokemon of pokemonList(); track pokemon.url) {
+            <button (click)="selectPokemonDetail(pokemon.name)" class="group text-left">
               <div class="bg-slate-800 rounded-lg shadow-lg overflow-hidden border border-slate-700 transition-all duration-300 hover:shadow-2xl hover:border-blue-500 cursor-pointer">
                 <!-- Image Container -->
                 <div class="flex items-center justify-center bg-slate-700/50 h-48 p-4">
@@ -32,32 +32,9 @@
                     <h3 class="text-xl font-bold text-white capitalize group-hover:text-blue-400 transition-colors">
                       {{ pokemon.name }}
                     </h3>
-                    <span class="text-2xl cursor-help relative group/icon" [title]="getFirstType(pokemon)">
-                      @switch (getFirstType(pokemon)) {
-                        @case ("fire") { 🔥 }
-                        @case ("water") { 💧 }
-                        @case ("grass") { 🌿 }
-                        @case ("electric") { ⚡ }
-                        @case ("psychic") { 🧠 }
-                        @case ("flying") { 🦅 }
-                        @case ("fighting") { 👊 }
-                        @case ("poison") { ☠️ }
-                        @case ("ground") { ⛏️ }
-                        @case ("rock") { 🪨 }
-                        @case ("bug") { 🐛 }
-                        @case ("ghost") { 👻 }
-                        @case ("steel") { ⚙️ }
-                        @case ("ice") { ❄️ }
-                        @case ("dragon") { 🐉 }
-                        @case ("dark") { 🌑 }
-                        @case ("fairy") { ✨ }
-                        @case ("normal") { 🔘 }
-                        @default { 🔘 }
-                      }
-                      <span class="absolute bottom-full left-1/2 -translate-x-1/2 bg-slate-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/icon:opacity-100 pointer-events-none transition-opacity capitalize">
-                        {{ getFirstType(pokemon) }}
-                      </span>
-                    </span>
+                    <app-pokemon-type-icon
+                      [pokemon]="pokemon.pokemonDetails"
+                    />
                   </div>
                 </div>
               </div>

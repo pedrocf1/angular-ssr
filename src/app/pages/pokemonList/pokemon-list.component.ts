@@ -1,32 +1,33 @@
-import { Component, OnInit, inject, signal, HostListener, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
 import { PokeApiService } from '../../services/pokeapi.service';
 import { PokemonModalComponent } from '../../components/pokemon-modal/pokemon-modal.component';
-import { Pokemon } from 'pokenode-ts';
+import { NamedAPIResource, NamedAPIResourceList, Pokemon } from 'pokenode-ts';
+import { PokemonTypeIconComponent } from '../../components/pokemon-type-icon/pokemon-type-icon.component';
+import { distinctUntilChanged } from 'rxjs';
 
-interface PokemonItem {
+export interface PokemonItem {
   name: string;
   url: string;
-  types?: Array<{ type: { name: string } }>;
+  pokemonDetails?: Pokemon | null;
 }
 
-interface PokemonListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: PokemonItem[];
-}
 
 @Component({
   selector: 'app-pokemon-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, PokemonModalComponent],
+  imports: [CommonModule, RouterModule, PokemonModalComponent, PokemonTypeIconComponent],
   templateUrl: './pokemon-list.component.html',
   styleUrl: './pokemon-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PokemonListComponent implements OnInit {
   private pokeApiService = inject(PokeApiService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  private document = inject(DOCUMENT);
 
   pokemonList = signal<PokemonItem[]>([]);
   totalCount = signal<number>(0);
@@ -42,16 +43,26 @@ export class PokemonListComponent implements OnInit {
   constructor() {
     // Watch for modal state changes and update body overflow
     effect(() => {
-      if (this.showModal()) {
-        document.body.classList.add('overflow-hidden');
-      } else {
-        document.body.classList.remove('overflow-hidden');
+      const body = this.document.body;
+      if (body) {
+        if (this.showModal()) {
+          body.classList.add('overflow-hidden');
+        } else {
+          body.classList.remove('overflow-hidden');
+        }
       }
     });
   }
 
   ngOnInit(): void {
     this.loadPokemonList();
+    this.activatedRoute.queryParams
+      // .pipe(distinctUntilChanged((prev, curr) => prev['pokemon'] === curr['pokemon']))
+      .subscribe(params => {
+        if (params['pokemon']) {
+          this.openPokemonModal(params['pokemon']);
+        }
+      });
   }
 
   private loadPokemonList(): void {
@@ -60,7 +71,7 @@ export class PokemonListComponent implements OnInit {
 
     this.pokeApiService
       .getPokemonsList(this.itemsPerPage(), 0)
-      .then((response: PokemonListResponse) => {
+      .then((response: NamedAPIResourceList) => {
         this.totalCount.set(response.count);
         this.fetchPokemonDetails(response.results, true);
       })
@@ -79,7 +90,7 @@ export class PokemonListComponent implements OnInit {
 
     this.pokeApiService
       .getPokemonsList(this.itemsPerPage(), newOffset)
-      .then((response: PokemonListResponse) => {
+      .then((response: NamedAPIResourceList) => {
         if (response.results.length === 0) {
           this.hasMoreResults.set(false);
         }
@@ -91,35 +102,35 @@ export class PokemonListComponent implements OnInit {
       });
   }
 
-  private fetchPokemonDetails(pokemonResults: PokemonItem[], isInitial: boolean): void {
-    const pokemonWithTypes = pokemonResults.map(pokemon => 
-      this.pokeApiService.getPokemonByName(pokemon.name)
-        .then(details => ({
-          ...pokemon,
-          types: details.types
-        }))
-    );
+  private fetchPokemonDetails(pokemonResults: NamedAPIResource[], isInitial: boolean): void {
+    // First, add the items without details
+    const initialItems = pokemonResults.map(p => ({ ...p, pokemonDetails: null } as PokemonItem));
+    
+    if (isInitial) {
+      this.pokemonList.set(initialItems);
+    } else {
+      this.pokemonList.update(current => [...current, ...initialItems]);
+    }
 
-    Promise.all(pokemonWithTypes)
-      .then(results => {
-        if (isInitial) {
-          this.pokemonList.set(results);
-          this.isLoading.set(false);
-        } else {
-          this.pokemonList.update(current => [...current, ...results]);
-          this.isLoadingMore.set(false);
-        }
-      })
-      .catch(error => {
-        console.error('Error loading pokemon types:', error);
-        if (isInitial) {
-          this.pokemonList.set(pokemonResults);
-          this.isLoading.set(false);
-        } else {
-          this.pokemonList.update(current => [...current, ...pokemonResults]);
-          this.isLoadingMore.set(false);
-        }
-      });
+    // Then fetch details for each pokemon and update the array
+    pokemonResults.forEach(pokemon => {
+      this.pokeApiService.getPokemonByName(pokemon.name)
+        .then(details => {
+          this.pokemonList.update(current => 
+            current.map(item => 
+              item.name === pokemon.name 
+                ? { ...item, pokemonDetails: details }
+                : item
+            )
+          );
+        })
+        .catch(error => {
+          console.error(`Error loading pokemon ${pokemon.name}:`, error);
+        });
+    });
+
+    this.isLoading.set(false);
+    this.isLoadingMore.set(false);
   }
 
   getPokemonImageUrl(url: string): string {
@@ -134,16 +145,19 @@ export class PokemonListComponent implements OnInit {
   }
 
   getFirstType(pokemon: PokemonItem): string {
-    return pokemon.types?.[0]?.type?.name || 'unknown';
+    return pokemon.pokemonDetails?.types?.[0]?.type?.name || 'unknown';
   }
 
   openPokemonModal(pokemonName: string): void {
-    console.log('Opening modal for:', pokemonName);
+    // Don't fetch if already selected
+    if (this.selectedPokemon()?.name === pokemonName && this.showModal()) {
+      return;
+    }
+
     this.modalLoading.set(true);
     this.pokeApiService
       .getPokemonByName(pokemonName)
       .then((data) => {
-        console.log('Pokemon data loaded:', data);
         this.selectedPokemon.set(data);
         this.showModal.set(true);
         this.modalLoading.set(false);
@@ -154,9 +168,23 @@ export class PokemonListComponent implements OnInit {
       });
   }
 
+  selectPokemonDetail(pokemonName: string): void {
+    this.router.navigate([], { 
+      relativeTo: this.activatedRoute,
+      queryParams: { pokemon: pokemonName },
+      queryParamsHandling: 'merge',
+    });
+  }
+
   closeModal(): void {
     this.showModal.set(false);
     this.selectedPokemon.set(null);
+    // Remove pokemon from query params
+    this.router.navigate([], { 
+      relativeTo: this.activatedRoute,
+      queryParams: { pokemon: null },
+      queryParamsHandling: 'merge'
+    });
   }
 
   @HostListener('window:scroll', [])

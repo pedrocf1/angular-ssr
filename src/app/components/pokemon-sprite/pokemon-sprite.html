@@ -1,0 +1,17 @@
+@if(sprites()) {
+    <div class="flex items-center justify-center bg-slate-700/50 rounded-lg p-4">
+        @if (sprites()!.other?.['official-artwork']?.front_default) {
+        <img 
+            [src]="sprites()!.other?.['official-artwork']?.front_default!" 
+            class="h-64 w-64 object-contain drop-shadow-lg"
+        />
+        } @else if (sprites()!.front_default) {
+        <img 
+            [src]="sprites()!.front_default" 
+            class="h-64 w-64 object-contain drop-shadow-lg"
+        />
+        } @else {
+        <div class="text-slate-400 text-center">No image available</div>
+        }
+    </div>
+}

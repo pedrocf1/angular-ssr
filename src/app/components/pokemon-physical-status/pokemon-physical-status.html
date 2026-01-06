@@ -1,0 +1,27 @@
+@if(pokemon()) {
+    <h3 class="text-xl font-bold text-white mb-4">Physical Stats</h3>
+    @if (pokemon()!.height != null) {
+      <div class="bg-slate-700/50 rounded p-4 mt-1">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-slate-300">Height:</span>
+          <span class="text-white font-semibold">{{ (pokemon()!.height / 10).toFixed(1) }}m</span>
+        </div>
+      </div>
+    }
+    @if (pokemon()!.weight != null) {
+      <div class="bg-slate-700/50 rounded p-4 mt-1">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-slate-300">Weight:</span>
+          <span class="text-white font-semibold">{{ (pokemon()!.weight / 10).toFixed(1) }}kg</span>
+        </div>
+      </div>
+    }
+    @if (pokemon()?.base_experience != null) {
+      <div class="bg-slate-700/50 rounded p-4 mt-1">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-slate-300">Base Exp:</span>
+          <span class="text-white font-semibold">{{ pokemon()?.base_experience }}</span>
+        </div>
+      </div>
+    }
+}

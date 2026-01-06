@@ -1,7 +1,6 @@
-<!-- Pokemon Detail Modal -->
 @if (showModal) {
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-hidden" (click)="closeModalOnBackdropClick($event)">
-    <div class="bg-slate-900 rounded-lg shadow-2xl max-w-4xl w-full my-8 relative">
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" (click)="closeModalOnBackdropClick($event)">
+    <div class="bg-slate-900 rounded-lg shadow-2xl max-w-4xl w-full my-8 relative h-auto">
       <button
         (click)="closeModal()"
         class="modal-close-btn"

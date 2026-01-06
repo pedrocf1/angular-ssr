@@ -21,4 +21,8 @@
     background-color: rgba(51, 65, 85, 0.5);
     color: rgb(203, 213, 225);
   }
+
+  @media (max-width: 768px) {
+    top: 30px;
+  }
 }

@@ -1,0 +1,27 @@
+
+<span class="cursor-help relative group/icon" [class]="spanClasses()" [title]="pokemionType()">
+    @switch (pokemionType()) {
+    @case ("fire") { 🔥 }
+    @case ("water") { 💧 }
+    @case ("grass") { 🌿 }
+    @case ("electric") { ⚡ }
+    @case ("psychic") { 🧠 }
+    @case ("flying") { 🦅 }
+    @case ("fighting") { 👊 }
+    @case ("poison") { ☠️ }
+    @case ("ground") { ⛏️ }
+    @case ("rock") { 🪨 }
+    @case ("bug") { 🐛 }
+    @case ("ghost") { 👻 }
+    @case ("steel") { ⚙️ }
+    @case ("ice") { ❄️ }
+    @case ("dragon") { 🐉 }
+    @case ("dark") { 🌑 }
+    @case ("fairy") { ✨ }
+    @case ("normal") { 🔘 }
+    @default { 🔘 }
+    }
+    <span class="absolute bottom-full left-1/2 -translate-x-1/2 bg-slate-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/icon:opacity-100 pointer-events-none transition-opacity capitalize">
+    {{ pokemionType() }}
+    </span>
+</span>
