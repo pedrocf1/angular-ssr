@@ -1,12 +1,25 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PokemonDetailComponent } from '../pokemonDetail/pokemon-detail.component';
 import { Pokemon } from 'pokenode-ts';
+import { PokemonSpriteComponent } from '../pokemon-sprite/pokemon-sprite';
+import { PokemonPhysicalStatusComponent } from '../pokemon-physical-status/pokemon-physical-status';
+import { PokemonStatusBarGroupComponent } from '../pokemon-status-bar-group/pokemon-status-bar-group';
+import { PokemonTypesBarGroupComponent } from '../pokemon-types-group/pokemon-types-group';
+import { PokemonAbilitiesComponent } from '../pokemon-abilities/pokemon-abilities';
+import { PokemonDamageRelationsComponent } from '../pokemon-damage-relations/pokemon-damage-relations';
 
 @Component({
   selector: 'app-pokemon-modal',
   standalone: true,
-  imports: [CommonModule, PokemonDetailComponent],
+  imports: [
+    CommonModule,
+    PokemonSpriteComponent,
+    PokemonPhysicalStatusComponent,
+    PokemonStatusBarGroupComponent,
+    PokemonTypesBarGroupComponent,
+    PokemonAbilitiesComponent,
+    PokemonDamageRelationsComponent,
+  ],
   templateUrl: './pokemon-modal.component.html',
   styleUrl: './pokemon-modal.component.scss',
 })
@@ -15,6 +28,16 @@ export class PokemonModalComponent {
   @Input() selectedPokemon: Pokemon | null = null;
   @Input() modalLoading: boolean = false;
   @Output() closeModalEvent = new EventEmitter<void>();
+
+  pokemon = signal<Pokemon | null>(null);
+  error = signal<string | null>(null);
+
+  ngOnChanges() {
+    if (this.selectedPokemon) {
+      this.pokemon.set(this.selectedPokemon);
+      this.error.set(null);
+    }
+  }
 
   closeModal(): void {
     this.closeModalEvent.emit();

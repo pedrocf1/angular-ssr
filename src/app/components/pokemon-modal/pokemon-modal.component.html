@@ -13,8 +13,39 @@
         <div class="flex items-center justify-center h-96">
           <div class="text-white text-2xl">Loading pokemon details...</div>
         </div>
-      } @else if (selectedPokemon) {
-        <app-pokemon-detail [pokemonData]="selectedPokemon"></app-pokemon-detail>
+      } @else if (error()) {
+        <div class="bg-red-500/20 border border-red-500 rounded-lg p-4 text-red-300">
+          {{ error() }}
+        </div>
+      } @else if (pokemon()) {
+        <div class="bg-slate-800 rounded-lg shadow-2xl overflow-hidden border border-slate-700">
+          <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-8 h-auto">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="md:text-5xl font-bold text-white capitalize">{{ pokemon()!.name }}</h1>
+                <p class="text-blue-100 mt-2">ID: #{{ pokemon()!.id }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-8 max-h-[calc(100vh-10vh)] overflow-y-auto">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+               <app-pokemon-sprite [sprites]="pokemon()!.sprites"/>
+                <app-pokemon-physical-status [pokemon]="pokemon()" />
+                <app-pokemon-types-group [pokemon]="pokemon()"/>
+            </div>
+
+            <div class="mb-8">
+              <app-pokemon-status-bar-group [pokemon]="pokemon()"/>
+            </div>
+
+            <div class="mb-8">
+              <app-pokemon-abilities [pokemonAbilities]="pokemon()!.abilities"/>
+            </div>
+
+            <app-pokemon-damage-relations [pokemon]="pokemon()"/>
+          </div>
+        </div>
       }
     </div>
   </div>
