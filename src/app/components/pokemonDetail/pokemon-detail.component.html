@@ -11,7 +11,7 @@
     <!-- Error State -->
     <div class="px-4 py-8 sm:px-6 lg:px-8">
       <div class="max-w-4xl mx-auto">
-        <button (click)="goBack()" class="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-8">
+        <button (click)="goBack()" class="cursor-pointer flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-8">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
@@ -24,10 +24,10 @@
       </div>
     </div>
   } @else if (pokemon()) {
-    <!-- MOBILE LAYOUT -->
-    <div class="md:hidden px-4 py-6">
+    <!-- UNIFIED RESPONSIVE LAYOUT -->
+    <div class="px-4 py-6 md:max-w-6xl md:mx-auto md:px-4 md:sm:px-6 md:lg:px-8 md:py-8">
       <!-- Breadcrumb Navigation -->
-      <button (click)="goBack()" class="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-6">
+      <button (click)="goBack()" class="cursor-pointer flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-6 md:mb-8">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -35,124 +35,21 @@
       </button>
 
       <!-- Header Section -->
-      <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-4 mb-6">
-        <p class="text-blue-400 text-xs font-semibold uppercase tracking-wider">Pokémon Details</p>
-        <h1 class="text-4xl font-bold text-white capitalize mt-2">{{ pokemon()!.name }}</h1>
-        <p class="text-slate-300 text-base mt-2">ID: <span class="text-blue-400 font-semibold">#{{ pokemon()!.id }}</span></p>
-      </div>
-
-      <!-- Sprite Section -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-        <app-pokemon-sprite [sprites]="pokemon()!.sprites"/>
-      </div>
-
-      <!-- Physical Status -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-        <app-pokemon-physical-status [pokemon]="pokemon()" />
-      </div>
-
-      <!-- Types -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-        <h2 class="text-lg font-bold text-white mb-3">Types</h2>
-        <app-pokemon-types-group [pokemon]="pokemon()"/>
-      </div>
-
-      <!-- Stats Section -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-        <h2 class="text-lg font-bold text-white mb-4">Stats</h2>
-        <app-pokemon-status-bar-group [pokemon]="pokemon()"/>
-      </div>
-
-      <!-- Abilities Section -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-        <h2 class="text-lg font-bold text-white mb-4">Abilities</h2>
-        <app-pokemon-abilities [pokemonAbilities]="pokemon()!.abilities"/>
-      </div>
-
-      <!-- Damage Relations Section -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-        <h2 class="text-lg font-bold text-white mb-4">Type Effectiveness</h2>
-        <app-pokemon-damage-relations [pokemon]="pokemon()"/>
-      </div>
-
-      @if (evolutionChainPokemon()) {
-        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-          <h2 class="text-lg font-bold text-white mb-4">Evolution Chain</h2>
-          
-          @if (evolutionLoading()) {
-            <div class="flex items-center justify-center py-8">
-              <div class="text-blue-400 text-sm">Loading evolution chain...</div>
-            </div>
-          } @else {
-            <div class="space-y-4">
-              @for (evolution of evolutionChainPokemon(); track evolution.pokemon.id) {
-                <div class="bg-slate-700/50 rounded-lg p-3 border border-slate-600">
-                  <div class="flex items-center gap-3">
-                    <img 
-                      [src]="evolution.pokemon.sprites?.front_default" 
-                      [alt]="evolution.pokemon.name"
-                      class="w-16 h-16 object-contain"
-                    />
-                    <div class="flex-1">
-                      <h3 class="text-white font-semibold capitalize">{{ evolution.pokemon.name }}</h3>
-                      <p class="text-slate-400 text-xs">#{{ evolution.pokemon.id }}</p>
-                      
-                      @if (evolution.evolutionDetails.length > 0) {
-                        <div class="mt-2 text-xs text-slate-300">
-                          <p class="text-blue-400 font-semibold">Evolution method:</p>
-                          @for (detail of evolution.evolutionDetails; track $index) {
-                            <div class="ml-2">
-                              @if (detail.min_level) {
-                                <span class="text-slate-400">Level {{ detail.min_level }}</span>
-                              }
-                              @if (detail.item) {
-                                <span class="text-slate-400">{{ detail.item.name }}</span>
-                              }
-                              @if (detail.trigger) {
-                                <span class="text-slate-400 capitalize">{{ detail.trigger.name }}</span>
-                              }
-                            </div>
-                          }
-                        </div>
-                      } @else {
-                        <p class="text-xs text-slate-400 mt-2">Base form - No evolution required</p>
-                      }
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      }
-    </div>
-
-    <!-- DESKTOP LAYOUT -->
-    <div class="hidden md:block max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Breadcrumb Navigation -->
-      <button (click)="goBack()" class="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors mb-8">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
-        Back to List
-      </button>
-
-      <!-- Header Section -->
-      <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8 mb-8">
+      <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl md:rounded-2xl p-4 md:p-8 mb-6 md:mb-8">
         <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div class="flex-1">
-            <p class="text-blue-400 text-sm font-semibold uppercase tracking-wider">Pokémon Details</p>
-            <h1 class="text-5xl lg:text-6xl font-bold text-white capitalize mt-2">{{ pokemon()!.name }}</h1>
-            <p class="text-slate-300 text-lg mt-2">ID: <span class="text-blue-400 font-semibold">#{{ pokemon()!.id }}</span></p>
+            <p class="text-blue-400 text-xs md:text-sm font-semibold uppercase tracking-wider">Pokémon Details</p>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white capitalize mt-2">{{ pokemon()!.name }}</h1>
+            <p class="text-slate-300 text-base md:text-lg mt-2">ID: <span class="text-blue-400 font-semibold">#{{ pokemon()!.id }}</span></p>
           </div>
         </div>
       </div>
 
       <!-- Main Content Grid -->
-      <div class="grid lg:grid-cols-3 gap-8 mb-8">
-        <!-- Sprite Section - Sticky Sidebar -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
+        <!-- Sprite Section -->
         <div class="lg:col-span-1">
-          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 sticky top-8">
+          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 md:p-6 md:sticky md:top-8">
             <app-pokemon-sprite [sprites]="pokemon()!.sprites"/>
           </div>
         </div>
@@ -160,108 +57,51 @@
         <!-- Info Section -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Physical Status -->
-          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 md:p-6">
             <app-pokemon-physical-status [pokemon]="pokemon()" />
           </div>
 
           <!-- Types -->
-          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-            <h2 class="text-xl font-bold text-white mb-4">Types</h2>
+          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 md:p-6">
             <app-pokemon-types-group [pokemon]="pokemon()"/>
           </div>
         </div>
       </div>
 
       <!-- Stats Section -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
-        <h2 class="text-2xl font-bold text-white mb-6">Stats</h2>
+      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 md:p-6 mb-6 md:mb-8">
+        <h2 class="text-lg md:text-2xl font-bold text-white mb-4 md:mb-6">Stats</h2>
         <app-pokemon-status-bar-group [pokemon]="pokemon()"/>
       </div>
 
       <!-- Abilities Section -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-8">
-        <h2 class="text-2xl font-bold text-white mb-6">Abilities</h2>
+      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 md:p-6 mb-6 md:mb-8">
+        <h2 class="text-lg md:text-2xl font-bold text-white mb-4 md:mb-6">Abilities</h2>
         <app-pokemon-abilities [pokemonAbilities]="pokemon()!.abilities"/>
       </div>
 
       <!-- Damage Relations Section -->
-      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-12">
-        <h2 class="text-2xl font-bold text-white mb-6">Type Effectiveness</h2>
+      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 md:p-6 mb-6 md:mb-12">
+        <h2 class="text-lg md:text-2xl font-bold text-white mb-4 md:mb-6">Type Effectiveness</h2>
         <app-pokemon-damage-relations [pokemon]="pokemon()"/>
       </div>
 
       <!-- Evolution Chain Section -->
-      @if (evolutionChainPokemon()) {
-        <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-12">
-          <h2 class="text-2xl font-bold text-white mb-6">Evolution Chain</h2>
-          
-          @if (evolutionLoading()) {
-            <div class="flex items-center justify-center py-12">
-              <div class="text-blue-400">Loading evolution chain...</div>
-            </div>
-          } @else {
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              @for (evolution of evolutionChainPokemon(); track evolution.pokemon.id) {
-                <div class="bg-gradient-to-br from-slate-700/50 to-slate-700/30 rounded-xl p-6 border border-slate-600 hover:border-blue-500 transition-colors">
-                  <div class="flex flex-col items-center text-center">
-                    <img 
-                      [src]="evolution.pokemon.sprites?.front_default" 
-                      [alt]="evolution.pokemon.name"
-                      class="w-24 h-24 object-contain mb-4"
-                    />
-                    <h3 class="text-xl font-bold text-white capitalize">{{ evolution.pokemon.name }}</h3>
-                    <p class="text-slate-400 text-sm">#{{ evolution.pokemon.id }}</p>
-                    
-                    @if (evolution.evolutionDetails.length > 0) {
-                      <div class="mt-4 pt-4 border-t border-slate-600 w-full text-left">
-                        <p class="text-blue-400 font-semibold text-sm mb-2">Evolution method:</p>
-                        @for (detail of evolution.evolutionDetails; track $index) {
-                          <div class="text-slate-300 text-sm space-y-1">
-                            @if (detail.min_level) {
-                              <div class="flex justify-between">
-                                <span>Level:</span>
-                                <span class="font-semibold">{{ detail.min_level }}</span>
-                              </div>
-                            }
-                            @if (detail.item) {
-                              <div class="flex justify-between">
-                                <span>Item:</span>
-                                <span class="font-semibold capitalize">{{ detail.item.name }}</span>
-                              </div>
-                            }
-                            @if (detail.trigger) {
-                              <div class="flex justify-between">
-                                <span>Trigger:</span>
-                                <span class="font-semibold capitalize">{{ detail.trigger.name }}</span>
-                              </div>
-                            }
-                            @if (detail.min_happiness) {
-                              <div class="flex justify-between">
-                                <span>Happiness:</span>
-                                <span class="font-semibold">{{ detail.min_happiness }}</span>
-                              </div>
-                            }
-                            @if (detail.location) {
-                              <div class="flex justify-between">
-                                <span>Location:</span>
-                                <span class="font-semibold capitalize">{{ detail.location.name }}</span>
-                              </div>
-                            }
-                          </div>
-                        }
-                      </div>
-                    } @else {
-                      <div class="mt-4 pt-4 border-t border-slate-600 w-full">
-                        <p class="text-slate-400 text-xs">Base form - No evolution required</p>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      }
+      <app-pokemon-evolution-list 
+        [evolutionChainPokemon]="evolutionChainPokemon()"
+        [currentPokemonName]="pokemon()!.name"
+        [evolutionLoading]="evolutionLoading()"
+        (navigateToPokemon)="navigateToPokemon($event)"
+      />
+
+      
+      <!-- Encounters Section -->
+      <app-pokemon-encounter-list 
+        [encounters]="encounters()"
+        [encounterLoading]="encounterLoading()"
+        [getEnglishLocationName]="getEnglishLocationName.bind(this)"
+        [getEncounterVersions]="getEncounterVersions.bind(this)"
+      />
     </div>
   }
 </div>

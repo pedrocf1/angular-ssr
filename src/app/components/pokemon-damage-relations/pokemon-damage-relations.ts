@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, inject, input, signal } from '@angular/core';
-import { Pokemon, Type } from 'pokenode-ts';
+import { Pokemon, PokemonType } from '../../types/api.types';
 import { PokeApiService } from '../../services/pokeapi.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-pokemon-damage-relations',
@@ -13,7 +14,7 @@ export class PokemonDamageRelationsComponent {
   private pokeApiService = inject(PokeApiService);
   pokemon = input<Pokemon | null>(null);
 
-  firstTypeData = signal<Type | null>(null);
+  firstTypeData = signal<PokemonType | null>(null);
   typeLoading = signal(false);
 
   constructor() {
@@ -42,13 +43,15 @@ export class PokemonDamageRelationsComponent {
     
     this.pokeApiService
       .getTypeById(parseInt(typeId || '0', 10))
-      .then((typeData: any) => {
-        this.firstTypeData.set(typeData);
-        this.typeLoading.set(false);
-      })
-      .catch((error: any) => {
-        console.error('Error loading type data:', error);
-        this.typeLoading.set(false);
+      .subscribe({
+        next: (typeData: PokemonType) => {
+          this.firstTypeData.set(typeData);
+          this.typeLoading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error loading type data:', error);
+          this.typeLoading.set(false);
+        }
       });
   }
 }

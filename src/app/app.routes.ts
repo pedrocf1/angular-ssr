@@ -2,10 +2,12 @@ import { Routes } from '@angular/router';
 import { PokemonDetailComponent } from './components/pokemonDetail/pokemon-detail.component';
 import { AboutComponent } from './pages/about/about.component';
 import { PokemonListComponent } from './pages/pokemonList/pokemon-list.component';
+import { OAuthCallbackComponent } from './components/oauth-callback/oauth-callback.component';
 
 export const routes: Routes = [
 	{ path: '', component: PokemonListComponent },
 	{ path: 'pokemonlist', component: PokemonListComponent },
-	{ path: 'pokemondetail/:name', component: PokemonDetailComponent },
+	{ path: 'auth/callback', component: OAuthCallbackComponent },
 	{ path: 'about', component: AboutComponent },
+	{ path: ':name', component: PokemonDetailComponent },
 ];

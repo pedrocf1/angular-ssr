@@ -1,0 +1,21 @@
+@if (evolutionChainPokemon()) {
+  <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 md:p-6 mb-6 md:mb-12">
+    <h2 class="text-lg md:text-2xl font-bold text-white mb-4 md:mb-6">Evolution Chain</h2>
+    
+    @if (evolutionLoading()) {
+      <div class="flex items-center justify-center py-8 md:py-12">
+        <div class="text-blue-400 text-sm md:text-base">Loading evolution chain...</div>
+      </div>
+    } @else {
+      <div class="space-y-4 md:grid md:grid-cols-1 md:lg:grid-cols-2 md:gap-4">
+        @for (evolution of evolutionChainPokemon(); track evolution.pokemon.id) {
+          <app-pokemon-evolution 
+            [evolution]="evolution"
+            [currentPokemonName]="currentPokemonName()"
+            (navigateToPokemon)="onNavigate($event)"
+          />
+        }
+      </div>
+    }
+  </div>
+}

@@ -1,1 +1,21 @@
 // Pokemon list component styles - modal styles moved to pokemon-modal.component.scss
+// Search bar styles
+input[type="text"] {
+  &::placeholder {
+    color: rgb(100 116 139 / 1);
+  }
+}
+
+// Loading spinner animation
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

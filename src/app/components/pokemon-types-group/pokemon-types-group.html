@@ -6,7 +6,7 @@
         <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-full px-4 py-2 flex content-center justify-between">
             <span class="text-white font-semibold capitalize">{{ type.type.name }}</span>
             <app-pokemon-type-icon
-              [pokemon]="pokemon()"
+              [typeName]="type.type.name"
               [size]="'normal'"
             />
         </div>

@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { Pokemon, PokemonType } from 'pokenode-ts';
+import { Pokemon, PokemonType } from '../../types/api.types';
 import { PokemonTypeIconComponent } from '../pokemon-type-icon/pokemon-type-icon.component';
 
 @Component({

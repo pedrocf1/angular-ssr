@@ -11,7 +11,8 @@ import { Pokemon } from 'pokenode-ts';
 })
 export class PokemonTypeIconComponent {
   pokemon = input<Pokemon | null>();
+  typeName = input<string>('');
   size = input<'big' | 'normal'>('normal');
-  pokemionType = computed(()=> this.pokemon()?.types?.[0]?.type?.name || 'unknown');
+  pokemionType = computed(()=> this.typeName() || this.pokemon()?.types?.[0]?.type?.name || 'unknown');
   spanClasses = computed(() => this.size() === 'big' ? 'text-6xl' : 'text-2xl');
 }

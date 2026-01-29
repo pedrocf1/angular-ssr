@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter, HostListener, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, HostListener, signal, inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { Pokemon } from 'pokenode-ts';
 import { PokemonSpriteComponent } from '../pokemon-sprite/pokemon-sprite';
 import { PokemonPhysicalStatusComponent } from '../pokemon-physical-status/pokemon-physical-status';
@@ -7,12 +7,14 @@ import { PokemonStatusBarGroupComponent } from '../pokemon-status-bar-group/poke
 import { PokemonTypesBarGroupComponent } from '../pokemon-types-group/pokemon-types-group';
 import { PokemonAbilitiesComponent } from '../pokemon-abilities/pokemon-abilities';
 import { PokemonDamageRelationsComponent } from '../pokemon-damage-relations/pokemon-damage-relations';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-pokemon-modal',
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     PokemonSpriteComponent,
     PokemonPhysicalStatusComponent,
     PokemonStatusBarGroupComponent,
@@ -31,6 +33,7 @@ export class PokemonModalComponent {
 
   pokemon = signal<Pokemon | null>(null);
   error = signal<string | null>(null);
+  private document = inject(DOCUMENT);
 
   ngOnChanges() {
     if (this.selectedPokemon) {
@@ -55,6 +58,13 @@ export class PokemonModalComponent {
   onEscapeKey(): void {
     if (this.showModal) {
       this.closeModal();
+    }
+  }
+
+  onViewDetails(): void {
+    const body = this.document.body;
+    if (body) {
+      body.classList.remove('overflow-hidden');
     }
   }
 }

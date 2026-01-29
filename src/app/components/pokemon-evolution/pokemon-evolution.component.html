@@ -1,0 +1,60 @@
+<div class="bg-slate-700/50 md:bg-gradient-to-br md:from-slate-700/50 md:to-slate-700/30 rounded-lg md:rounded-xl p-3 md:p-6 border border-slate-600 md:hover:border-blue-500 md:transition-colors flex flex-col md:min-h-[350px] md:text-center">
+  <div class="flex md:flex-col items-center gap-3 md:gap-0 flex-1">
+    <img 
+      [src]="evolution()!.pokemon.sprites?.front_default" 
+      [alt]="evolution()!.pokemon.name"
+      class="w-16 md:w-24 h-16 md:h-24 object-contain md:mb-4"
+    />
+    <div class="flex-1 md:flex-none">
+      <h3 class="text-white font-semibold capitalize md:text-xl">{{ evolution()!.pokemon.name }}</h3>
+      <p class="text-slate-400 text-xs md:text-sm">#{{ evolution()!.pokemon.id }}</p>
+      
+      @if (evolution()!.evolutionDetails.length > 0) {
+        <div class="mt-2 md:mt-4 md:pt-4 md:border-t md:border-slate-600 md:w-full md:text-left text-xs md:text-sm text-slate-300">
+          <p class="text-blue-400 font-semibold md:mb-2">Evolution method:</p>
+          @for (detail of evolution()!.evolutionDetails; track $index) {
+            <div class="ml-2 md:ml-0 md:space-y-1">
+              @if (detail.min_level) {
+                <div class="md:flex md:justify-between">
+                  <span class="md:hidden">Level:</span>
+                  <span class="text-slate-400 md:text-slate-300">Level {{ detail.min_level }}</span>
+                </div>
+              }
+              @if (detail.item) {
+                <div class="md:flex md:justify-between">
+                  <span class="md:hidden">Item:</span>
+                  <span class="text-slate-400 md:text-slate-300 capitalize">{{ detail.item.name }}</span>
+                </div>
+              }
+              @if (detail.trigger) {
+                <div class="md:flex md:justify-between">
+                  <span class="md:hidden">Trigger:</span>
+                  <span class="text-slate-400 md:text-slate-300 capitalize">{{ detail.trigger.name }}</span>
+                </div>
+              }
+              @if (detail.min_happiness) {
+                <div class="md:flex md:justify-between">
+                  <span>Happiness:</span>
+                  <span class="font-semibold">{{ detail.min_happiness }}</span>
+                </div>
+              }
+              @if (detail.location) {
+                <div class="md:flex md:justify-between">
+                  <span>Location:</span>
+                  <span class="font-semibold capitalize">{{ detail.location.name }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="text-xs md:text-sm text-slate-400 mt-2 md:mt-4 md:pt-4 md:border-t md:border-slate-600 md:w-full">Base form - No evolution required</p>
+      }
+    </div>
+  </div>
+  @if(evolution()!.pokemon.name.toLowerCase() !== currentPokemonName()?.toLowerCase()) {
+    <button (click)="onNavigate(evolution()!.pokemon.name)" class="cursor-pointer mt-4 w-full md:w-[9rem] md:mx-auto bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition-colors text-sm md:text-base">
+      View Details
+    </button>
+  }
+</div>
