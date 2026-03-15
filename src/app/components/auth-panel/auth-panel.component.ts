@@ -20,18 +20,22 @@ import { AuthService } from '../../services/auth.service';
         </div>
       </ng-container>
       <ng-template #notLoggedIn>
-        <button
-          (click)="loginWithGithub()"
+        <a
+          [href]="loginUrl"
           class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition flex items-center gap-2"
         >
           <span>GitHub Login</span>
-        </button>
+        </a>
       </ng-template>
     </div>
   `,
   styles: []
 })
 export class AuthPanelComponent {
+  get loginUrl(): string {
+    return this.authService.getGithubAuthUrl();
+  }
+
   get currentUser$() {
     return this.authService.currentUser$;
   }

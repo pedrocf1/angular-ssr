@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, signal, HostListener, effect, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, HostListener, effect, ChangeDetectionStrategy, DestroyRef, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { PokeApiService } from '../../services/pokeapi.service';
 import { PokemonModalComponent } from '../../components/pokemon-modal/pokemon-modal.component';
 import { NamedAPIResource, NamedAPIResourceList, Pokemon } from 'pokenode-ts';
@@ -10,6 +10,7 @@ import { PokemonTypeIconComponent } from '../../components/pokemon-type-icon/pok
 import { PokemonTypeFilterComponent } from '../../components/pokemon-type-filter/pokemon-type-filter.component';
 import { PokemonSearchComponent } from '../../components/pokemon-search/pokemon-search.component';
 import { HttpErrorResponse } from '@angular/common/http';
+import { BackendApiService } from '../../services/backend-api.service';
 
 export interface PokemonItem {
   name: string;
@@ -37,6 +38,8 @@ export class PokemonListComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private document = inject(DOCUMENT);
   private destroyRef = inject(DestroyRef);
+  private backendApi = inject(BackendApiService);
+  private platformId = inject(PLATFORM_ID);
 
   pokemonList = signal<PokemonItem[]>([]);
   totalCount = signal<number>(0);
@@ -50,6 +53,9 @@ export class PokemonListComponent implements OnInit {
   hasMoreResults = signal<boolean>(true);
   typesList = signal<PokemonType[]>([]);
   selectedType = signal<string>('');
+  favoriteRecordByPokemonId = signal<Record<string, string | number>>({});
+  favoriteRecordByName = signal<Record<string, string | number>>({});
+  favoriteLoadingState = signal<Record<string, boolean>>({});
 
   constructor() {
     // Watch for modal state changes and update body overflow
@@ -68,11 +74,148 @@ export class PokemonListComponent implements OnInit {
   ngOnInit(): void {
     this.loadTypesList();
     this.loadPokemonList();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadFavoritePokemon();
+    }
     this.activatedRoute.queryParams
       // .pipe(distinctUntilChanged((prev, curr) => prev['pokemon'] === curr['pokemon']))
       .subscribe(params => {
         if (params['pokemon']) {
           this.openPokemonModal(params['pokemon']);
+        }
+      });
+  }
+
+  private loadFavoritePokemon(): void {
+    this.backendApi.getFavoritePokemon<unknown[]>()
+      .subscribe({
+        next: (favorites) => {
+          const byPokemonId: Record<string, string | number> = {};
+          const byName: Record<string, string | number> = {};
+
+          for (const favorite of favorites ?? []) {
+            const recordId = this.extractFavoriteRecordId(favorite);
+            if (!recordId) {
+              continue;
+            }
+
+            const pokemonId = this.extractFavoritePokemonId(favorite);
+            if (pokemonId) {
+              byPokemonId[pokemonId] = recordId;
+            }
+
+            const pokemonName = this.extractFavoritePokemonName(favorite);
+            if (pokemonName) {
+              byName[pokemonName] = recordId;
+            }
+          }
+
+          this.favoriteRecordByPokemonId.set(byPokemonId);
+          this.favoriteRecordByName.set(byName);
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error loading favorite pokemon:', error);
+        }
+      });
+  }
+
+  private extractFavoriteRecordId(value: unknown): string | number | null {
+    const favorite = (value ?? {}) as Record<string, unknown>;
+    const candidate = favorite['id'];
+    if (typeof candidate === 'number' || typeof candidate === 'string') {
+      return candidate;
+    }
+    return null;
+  }
+
+  private extractFavoritePokemonId(value: unknown): string | null {
+    const favorite = (value ?? {}) as Record<string, unknown>;
+    const candidate = favorite['pokemonId'] ?? favorite['pokemon_id'] ?? favorite['pokeapiId'];
+    if (typeof candidate === 'number' || typeof candidate === 'string') {
+      return String(candidate);
+    }
+    return null;
+  }
+
+  private extractFavoritePokemonName(value: unknown): string | null {
+    const favorite = (value ?? {}) as Record<string, unknown>;
+    const candidate = favorite['pokemonName'] ?? favorite['pokemon_name'] ?? favorite['name'];
+    if (typeof candidate === 'string' && candidate.trim().length > 0) {
+      return candidate.trim().toLowerCase();
+    }
+    return null;
+  }
+
+  private getFavoriteRecordId(pokemon: PokemonItem): string | number | null {
+    const pokemonId = this.getPokemonId(pokemon.url);
+    const byId = this.favoriteRecordByPokemonId()[pokemonId];
+    if (byId !== undefined) {
+      return byId;
+    }
+
+    const byName = this.favoriteRecordByName()[pokemon.name.toLowerCase()];
+    if (byName !== undefined) {
+      return byName;
+    }
+
+    return null;
+  }
+
+  private getFavoriteKey(pokemon: PokemonItem): string {
+    const pokemonId = this.getPokemonId(pokemon.url);
+    return pokemonId ? `id:${pokemonId}` : `name:${pokemon.name.toLowerCase()}`;
+  }
+
+  isFavorite(pokemon: PokemonItem): boolean {
+    return this.getFavoriteRecordId(pokemon) !== null;
+  }
+
+  isFavoriteLoading(pokemon: PokemonItem): boolean {
+    return this.favoriteLoadingState()[this.getFavoriteKey(pokemon)] === true;
+  }
+
+  toggleFavorite(pokemon: PokemonItem, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const loadingKey = this.getFavoriteKey(pokemon);
+    if (this.favoriteLoadingState()[loadingKey]) {
+      return;
+    }
+
+    this.favoriteLoadingState.update(current => ({ ...current, [loadingKey]: true }));
+
+    const favoriteRecordId = this.getFavoriteRecordId(pokemon);
+
+    if (favoriteRecordId !== null) {
+      this.backendApi.deleteFavoritePokemon(favoriteRecordId)
+        .subscribe({
+          next: () => {
+            this.loadFavoritePokemon();
+            this.favoriteLoadingState.update(current => ({ ...current, [loadingKey]: false }));
+          },
+          error: (error: HttpErrorResponse) => {
+            console.error('Error removing favorite pokemon:', error);
+            this.favoriteLoadingState.update(current => ({ ...current, [loadingKey]: false }));
+          }
+        });
+      return;
+    }
+
+    this.backendApi.createFavoritePokemon(
+      {
+        pokemonId: Number(this.getPokemonId(pokemon.url)),
+        pokemonName: pokemon.name,
+      }
+    )
+      .subscribe({
+        next: () => {
+          this.loadFavoritePokemon();
+          this.favoriteLoadingState.update(current => ({ ...current, [loadingKey]: false }));
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error creating favorite pokemon:', error);
+          this.favoriteLoadingState.update(current => ({ ...current, [loadingKey]: false }));
         }
       });
   }

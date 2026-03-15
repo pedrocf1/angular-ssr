@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-oauth-callback',
@@ -20,6 +20,7 @@ import { CommonModule } from '@angular/common';
 })
 export class OAuthCallbackComponent implements OnInit {
   debugMessage = 'Processing authentication...';
+  private platformId = inject(PLATFORM_ID);
 
   constructor(
     private route: ActivatedRoute,
@@ -27,34 +28,103 @@ export class OAuthCallbackComponent implements OnInit {
     private authService: AuthService
   ) {}
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      
-      const token = params['token'];
-      const user = params['user'];
+  private normalizeTokenValue(value: string | null): string | null {
+    if (!value) {
+      return null;
+    }
 
-      if (token && user) {
-        try {
-          const userData = JSON.parse(user);
-          this.authService.handleCallback(token, userData);
-          this.debugMessage = 'Authentication successful! Redirecting in 3 seconds...';
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 3000);
-        } catch (e) {
-          console.error('Failed to parse user data:', e);
-          this.debugMessage = 'Error processing authentication';
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 3000);
+    return value.trim().replace(/ /g, '+');
+  }
+
+  private parseCallbackParams(): { token: string | null; user: unknown | null } {
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashValue = window.location.hash.startsWith('#')
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const hashParams = new URLSearchParams(hashValue);
+
+    const getParam = (keys: string[]): string | null => {
+      for (const key of keys) {
+        const fromSearch = searchParams.get(key);
+        if (fromSearch) {
+          return fromSearch;
         }
-      } else {
-        console.error('No token or user data in query params');
-        this.debugMessage = 'No authentication data received';
-        setTimeout(() => {
-          this.router.navigate(['/']);
-        }, 3000);
+
+        const fromHash = hashParams.get(key);
+        if (fromHash) {
+          return fromHash;
+        }
       }
-    });
+
+      return null;
+    };
+
+    const token = this.normalizeTokenValue(getParam(['token', 'access_token', 'accessToken', 'auth_token', 'access-token', 'jwt']));
+    const userRaw = getParam(['user', 'userData', 'profile']);
+    const user = this.parseUser(userRaw, token);
+
+    return { token, user };
+  }
+
+  private parseUser(userRaw: string | null, token: string | null): unknown | null {
+    if (userRaw) {
+      try {
+        return JSON.parse(userRaw);
+      } catch {
+        try {
+          return JSON.parse(decodeURIComponent(userRaw));
+        } catch {
+          try {
+            const normalized = userRaw.replace(/-/g, '+').replace(/_/g, '/');
+            const padded = normalized.padEnd(normalized.length + (4 - (normalized.length % 4 || 4)) % 4, '=');
+            const decoded = atob(padded);
+            return JSON.parse(decoded);
+          } catch {
+            return null;
+          }
+        }
+      }
+    }
+
+    if (!token) {
+      return null;
+    }
+
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    try {
+      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const paddedPayload = payload.padEnd(payload.length + (4 - (payload.length % 4 || 4)) % 4, '=');
+      const decoded = atob(paddedPayload);
+      return JSON.parse(decoded);
+    } catch {
+      return null;
+    }
+  }
+
+  ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    // Parse query params directly from the URL
+    const { token, user } = this.parseCallbackParams();
+
+    if (token) {
+      this.authService.handleCallback(token, user);
+      this.debugMessage = 'Authentication successful! Redirecting in 3 seconds...';
+      setTimeout(() => {
+        this.router.navigate(['/']);
+      }, 3000);
+    } else {
+      console.error('No authentication token found in callback URL');
+      this.debugMessage = 'No authentication data received';
+      setTimeout(() => {
+        this.router.navigate(['/']);
+      }, 3000);
+    }
   }
 }

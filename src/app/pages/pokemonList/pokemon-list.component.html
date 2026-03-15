@@ -26,8 +26,20 @@
         <!-- Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           @for (pokemon of getFilteredPokemonList(); track pokemon.url) {
-            <button (click)="selectPokemonDetail(pokemon.name)" class="cursor-pointer group text-left">
-              <div class="bg-slate-800 rounded-lg shadow-lg overflow-hidden border border-slate-700 transition-all duration-300 hover:shadow-2xl hover:border-blue-500 cursor-pointer">
+            <div (click)="selectPokemonDetail(pokemon.name)" class="cursor-pointer group text-left">
+              <div class="relative bg-slate-800 rounded-lg shadow-lg overflow-hidden border border-slate-700 transition-all duration-300 hover:shadow-2xl hover:border-blue-500 cursor-pointer">
+                <button
+                  type="button"
+                  (click)="toggleFavorite(pokemon, $event)"
+                  class="absolute top-3 right-3 z-10 text-2xl leading-none transition-colors"
+                  [class.text-yellow-400]="isFavorite(pokemon)"
+                  [class.text-slate-400]="!isFavorite(pokemon)"
+                  [class.opacity-60]="isFavoriteLoading(pokemon)"
+                  [disabled]="isFavoriteLoading(pokemon)"
+                  aria-label="Toggle favorite"
+                >
+                  {{ isFavorite(pokemon) ? '★' : '☆' }}
+                </button>
                 <!-- Image Container -->
                 <div class="flex items-center justify-center bg-slate-700/50 h-48 p-4">
                   <img 
@@ -49,7 +61,7 @@
                   </div>
                 </div>
               </div>
-            </button>
+            </div>
           }
         </div>
 
