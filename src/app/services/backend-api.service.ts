@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { FavoritePokemon } from '../types/api.types';
 
 export type RequestOptions = {
   params?: HttpParams | Record<string, string | number | boolean>;
@@ -22,7 +23,6 @@ export class BackendApiService {
 
   private withAuth(options?: RequestOptions): RequestOptions | undefined {
     const token = this.authService.getToken() ?? this.getSessionToken();
-    console.log("WITH AUTH - token:", token);
     if (!token) {
       return options;
     }
@@ -101,8 +101,8 @@ export class BackendApiService {
     return this.http.delete<T>(this.buildUrl(path), this.withAuth(options));
   }
 
-  getFavoritePokemon<T = unknown[]>(options?: RequestOptions): Observable<T> {
-    return this.get<T>(this.favoritePokemonPath, options);
+  getFavoritePokemons(options?: RequestOptions): Observable<FavoritePokemon[]> {
+    return this.get<FavoritePokemon[]>(this.favoritePokemonPath, options);
   }
 
   getFavoritePokemonById<T = unknown>(id: number | string, options?: RequestOptions): Observable<T> {
@@ -113,25 +113,7 @@ export class BackendApiService {
     body: TBody,
     options?: RequestOptions
   ): Observable<TResponse> {
-    const token = this.authService.getToken() ?? this.getSessionToken();
-    const currentHeaders = options?.headers;
-
-    const headerRecord: Record<string, string | string[]> = currentHeaders instanceof HttpHeaders
-      ? {}
-      : { ...(currentHeaders ?? {}) };
-
-    if (token) {
-      headerRecord['Authorization'] = `Bearer ${token}`;
-    }
-
-    return this.http.post<TResponse>(
-      this.buildUrl(this.favoritePokemonPath),
-      body,
-      {
-        ...options,
-        headers: headerRecord,
-      }
-    );
+    return this.post<TResponse, TBody>(this.favoritePokemonPath, body, options);
   }
 
   updateFavoritePokemon<TResponse = unknown, TBody = unknown>(

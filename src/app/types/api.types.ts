@@ -41,3 +41,12 @@ export interface PokemonType extends PokemonTypeBase {
     no_damage_to?: Array<{ name: string; url: string }>;
   };
 }
+
+/**
+ * Represents a favorite pokemon record from the backend API.
+ */
+export interface FavoritePokemon {
+  id: number;
+  userId: number;
+  pokemonId: number;
+}
